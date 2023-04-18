@@ -1,5 +1,5 @@
 # load list of examples of input and output for all functions
-load("primeri.RDat")
+load("../RChat/primeri.RDat")
 # If there are new examples, add them here.
 # Order of examples doesn't matter.
 # 1st element of the list is input, 2nd is output
@@ -23,7 +23,7 @@ codeevaluation <- function(snip){
     ulaz <- primeri[[fname]][[1]]
     izlaz <- tryCatch(eval(parse(text=paste0(fname,"(ulaz)"))),
                       error=function(e){
-                        fdbck <- "Function failed."
+                        fdbck <- "Function failed to execute."
                         return(fdbck)
                         stop()
                       })
@@ -32,7 +32,7 @@ codeevaluation <- function(snip){
     if (!is.null(izlaz) & all(format(izlaz,digits=5) ==format(izlaz0,digits=5))) {
       fdbck <- "Test example successfully passed."
     } else {
-      fdbck <- "Test example failed."
+      fdbck <- "Function creates output, but the test example failed."
     }
   } else {
     fdbck <- "Function name is not recognized."

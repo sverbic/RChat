@@ -17,17 +17,35 @@ msgID <- data.frame(names=nms)
 
 # my channel is named Rcode
 chan <- team$get_channel('Rcode')
-# By default, function retrieves only the 50 most recent messages.
+# by default, retrieves 50 most recent messages
 msgs <- chan$list_messages(n=Inf)
+# mar is list of messages and replies
+mar <- NULL
+k <- 1
+for (ind in length(msgs):1) {
+  rp <- msgs[[ind]]$list_replies() # max n=50
+  lrp <- length(rp)
+  mar[[k]] <-msgs[[ind]]
+  if (lrp==0) {
+    k <- k+1 # no replies, just a message
+  }
+  else {
+    # add lrp replies
+    for (jnd in 1:lrp) {
+      mar[[k+jnd]] <- rp[[jnd]]
+    }
+    k <- k+lrp
+  }
+}
 # We'll write down all plain-text messages to a file.
 sink("Rcode.txt")
 myname <- "Srđan Verbić" # My snippets shouldn't be evaluated.
-for (ind in length(msgs):1) {
-  nm <- msgs[[ind]]$properties$from$user$displayName
+for (k in length(mar):1) {
+  nm <- mar[[k]]$properties$from$user$displayName
   if (is.null(nm)) next   # go for the next if name is null
-  if (nm==myname) next  # next if it is my message
-  tm <- msgs[[ind]]$properties$createdDateTime
-  ht <- msgs[[ind]]$properties$body$content
+  #if (nm==myname) next  # next if it is my message
+  tm <- mar[[k]]$properties$createdDateTime
+  ht <- mar[[k]]$properties$body$content
   text <- htm2txt(ht) #convert to plain text
   # There are some obsolete signs in snippets that should be removed.
   zws1 <- "\u200B" # "zero width space" (PC & Mac)
@@ -37,16 +55,16 @@ for (ind in length(msgs):1) {
   text <- gsub(zws1,"",text) # remove zws5
   text <- gsub("\n\n","\n",text) # remove double breaks
   cat(tm,"\t",nm,"\n",text,"\n")
-
+  
   # extract function name (characters left of " ", "<" or "=")
   clm <- strsplit(text,"[<= ]")[[1]][1]
   if (clm %in% colnames(snippets)) {
     snippets[snippets$names==nm,which(clm==colnames(snippets))] <- text
-    msgID[snippets$names==nm,which(clm==colnames(snippets))] <- ind
+    msgID[snippets$names==nm,which(clm==colnames(snippets))] <- k
   } else {
     nextcol <- dim(snippets)[2]+1
     snippets[snippets$names==nm,nextcol] <- text
-    msgID[snippets$names==nm,nextcol] <- ind
+    msgID[snippets$names==nm,nextcol] <- k
     colnames(snippets)[nextcol] <- clm
     colnames(msgID)[nextcol] <- clm
   }
@@ -55,5 +73,5 @@ for (ind in length(msgs):1) {
 sink()
 
 # write down snippets' data frames
-save(snippets,file="snippets.RData")
-save(msgID,file="msgID.RData")
+save(snippets,file="../RChat/snippets.RData")
+save(msgID,file="../RChat/msgID.RData")
