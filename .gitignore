@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+config.R
 msgID.RData
 Rcode.txt
 snippets.RData

@@ -1,6 +1,8 @@
 library(Microsoft365R)
 library(htm2txt)
 
+# source("config.R")
+
 # You should be logged to office.com to get Teams messages
 # this way. Probably, you'll need administration privileges too.
 # Also, you need to be member of the team.
@@ -47,12 +49,17 @@ for (k in length(mar):1) {
   tm <- mar[[k]]$properties$createdDateTime
   ht <- mar[[k]]$properties$body$content
   text <- htm2txt(ht) #convert to plain text
+  Encoding(text) <- "UTF-8" # sometimes htm2txt converts to bytes
   # There are some obsolete signs in snippets that should be removed.
   zws1 <- "\u200B" # "zero width space" (PC & Mac)
-  nbs2 <- "\u00A0{2}" # 2-fold "no-break space" (Mac) 
+  nbs2 <- "\u00A0{2}" # 2-fold "no-break space" (Mac)
   zws5 <- "\u200B{5}" # 5-fold "zero width space" (PC)
+  nbs1 <- "\u00A0" # "no-break space" (PC)
+  zwsp <- "\u200B+" # "zero width space" (PC & Mac)
   text <- gsub(nbs2,"\n",text) # substitute zws2 w/ break
-  text <- gsub(zws1,"",text) # remove zws5
+  text <- gsub(zws5,"",text) # remove zws5
+  text <- gsub(zwsp," ",text) # substitute a few zws w/ space
+  text <- gsub(nbs1,"\n",text) # substitute nbs1 w/ break
   text <- gsub("\n\n","\n",text) # remove double breaks
   cat(tm,"\t",nm,"\n",text,"\n")
   
